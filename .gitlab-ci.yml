@@ -1,0 +1,17 @@
+
+stages:
+  - DeployMain
+
+DeployMain:
+  stage: DeployMain
+  image: node:14.15-alpine
+  when: manual
+  only:
+    - main
+  script:
+    - apk add rsync && apk add openssh
+    - mkdir -p ~/.ssh
+    - ssh-keyscan -H "$CI_HOST_NAME"  >> ~/.ssh/known_hosts
+    - echo "$CI_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    # - ssh -i ~/.ssh/id_rsa ec2-user@$CI_HOST_NAME "cd /home/ec2-user/new-bash-prod/ && ./build.sh"

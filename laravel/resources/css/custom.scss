@@ -1,0 +1,36 @@
+.form-floating>.form-control-plaintext:focus,
+.form-floating>.form-control-plaintext:not(:placeholder-shown),
+.form-floating>.form-control:focus,
+.form-floating>.form-control:not(:placeholder-shown) {
+    padding-top: 1.4rem;
+}
+
+.body-wrapper>.container-fluid,
+.body-wrapper>.container-lg,
+.body-wrapper>.container-md,
+.body-wrapper>.container-sm,
+.body-wrapper>.container-xl,
+.body-wrapper>.container-xxl {
+    transition: .0001s ease-in;
+}
+
+body {
+ #main-wrapper[data-layout=vertical][data-header-position=fixed]  {
+        &.admin-custom{
+            .body-wrapper {
+                >.container-fluid {
+                    padding-top: 100px;
+                }
+            }
+            .dropdown-menu-animate-up{
+                -webkit-animation:none;
+                animation:none;
+            }
+            .dropdown-menu[data-bs-popper] {
+                left: auto; 
+                margin-top: 0px;
+            }
+        }
+       
+    }
+}

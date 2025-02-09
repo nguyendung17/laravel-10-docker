@@ -1,0 +1,111 @@
+version: '2'
+services:
+  nginx:
+    image: nginx:1.23.4-alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./laravel:/var/www/
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
+    links:
+      - php
+#Php8-FPM
+  php:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - './laravel:/var/www/'
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    depends_on:
+      - db
+    networks:
+      - app-network
+#vite
+  vite:
+    image: node:14-alpine
+    restart: unless-stopped
+    tty: true
+    working_dir: /home/node/app
+    command: >
+      sh -c " npm i --force && npm run dev"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./laravel:/home/node/app
+      - ./laravel/node_modules:/home/node/app/node_modules
+    networks:
+      - app-network
+  #MySQL Service
+  db:
+    # platform: linux/amd64
+    image: mysql
+    restart: unless-stopped
+    tty: true
+    # ports:
+      # - "3308:3306"
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: Qwerty@!@
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+      - db
+    depends_on: 
+      - db
+    networks:
+      - app-network
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    # container_name: myapp-redis
+    command: redis-server --appendonly yes --requirepass "Qwerty@!@"
+    volumes:
+      - redisdata:/redist-data
+      - ./docker/redis/sysctl.conf:/etc/sysctl.conf
+    # ports:
+      # - "8002:6379"
+    networks:
+      - app-network
+  queue:
+    image: docker.io/bitnami/laravel:10
+    command: /app/docker/run.sh queue
+    restart: unless-stopped
+    volumes:
+      - './laravel:/app'
+      - './docker:/app/docker'
+    networks:
+      - app-network
+  schedule:
+    image: docker.io/bitnami/laravel:10
+    command: /app/docker/run.sh schedule
+    restart: unless-stopped
+    volumes:
+      - './laravel:/app'
+      - './docker:/app/docker'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+#Volumes
+volumes:
+  dbdata:
+    driver: local
+  redisdata:
+    driver: local
